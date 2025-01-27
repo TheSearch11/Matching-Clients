@@ -99,6 +99,7 @@ def create_availability_dict(dataframe, is_client=False):
         gender = "N/A"  # Default value for trainer gender
         if not is_client:
             gender = str(row.get('Gender', 'N/A')).strip().lower()
+            queue = str(row.get('Queue', 'n')).strip().lower()
 
         # Parse and standardize availability ranges
         availability_ranges = parse_day_time(availability)
@@ -114,6 +115,7 @@ def create_availability_dict(dataframe, is_client=False):
                 entry['Gender Preference'] = gender_preference
             else:
                 entry['Gender'] = gender
+                entry['Queue'] = queue
             availability_dict[range_entry['day']].append(entry)
 
     return availability_dict
@@ -125,6 +127,10 @@ def process_day_matches(day, client_entries, trainer_entries, client_matches):
 
         for trainer_entry in trainer_entries:
             trainer_gender = trainer_entry.get('Gender', 'nan').strip().lower()
+
+            #Check if trainer is in queue
+            if trainer_entry['Queue'] != 'y':
+                continue
 
             # Include all trainers for clients with "N/A" preference, otherwise match gender
             if gender_preference == "nan" or gender_preference == trainer_gender:
